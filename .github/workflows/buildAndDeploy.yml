@@ -41,7 +41,11 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         version="$(mvn -q --no-transfer-progress -DforceStdout -Dexpression=project.version org.apache.maven.plugins:maven-help-plugin:3.5.1:evaluate)"
-        gh release create "v$version" --notes "" --target "$GITHUB_SHA"
+        if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "Version ist ungültig '$version'" >&2
+          exit 1
+        fi
+        gh release create "$version" --notes "" --target "$GITHUB_SHA"
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
